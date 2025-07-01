@@ -17,8 +17,21 @@ app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001'
+];
+
 app.use(cors({
-    origin: '*',
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type']
 }));
@@ -362,7 +375,7 @@ app.post('/api/submit', upload.fields([
                 additionalEducation = typeof additional_education === 'string' 
                     ? JSON.parse(additional_education) : additional_education;
                 if (!Array.isArray(additionalEducation)) {
-                    throw new Error('additional_education must be an array');
+                    throw new Error('additional_ ation must be an array');
                 }
             } catch (e) {
                 console.error('Error parsing additional_education:', e.message);
@@ -431,172 +444,6 @@ app.post('/api/submit', upload.fields([
     } catch (error) {
         console.error('Error processing submission:', error.message, { stack: error.stack });
         res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// Sample data insertion endpoint
-app.post('/api/insert-sample-data', async (req, res) => {
-    try {
-        console.log('Inserting sample data...');
-        const sampleData = [
-            {
-                full_name: 'John Doe',
-                email: 'john.doe@example.com',
-                mobile: '1234567890',
-                dob: '1990-05-15',
-                parent_name: 'Michael Doe',
-                gender: 'Male',
-                nationality: 'American',
-                marital_status: 'Single',
-                current_address: '123 Main St, Springfield',
-                permanent_address: '123 Main St, Springfield',
-                state: 'Illinois',
-                city: 'Springfield',
-                zipcode: '62701',
-                emergency_contact: '9876543210',
-                ssc_board: 'State Board',
-                ssc_year: 2006,
-                ssc_percentage: '85.5',
-                intermediate_board: 'State Board',
-                intermediate_year: 2008,
-                intermediate_percentage: '88.0',
-                college_name: 'Springfield University',
-                qualification: 'B.Tech',
-                branch: 'Computer Science',
-                graduation_year: 2012,
-                graduation_percentage: '90.0',
-                additional_education: [
-                    {
-                        institution: 'Online Academy',
-                        qualification: 'Data Science Certification',
-                        year: 2015,
-                        percentage: '95.0'
-                    }
-                ],
-                job_role: 'Software Engineer',
-                preferred_location: 'New York',
-                notice_period: '30 days',
-                expected_salary: 80000,
-                skills: 'JavaScript, Python, SQL',
-                experience_status: 'Experienced',
-                years_experience: 5,
-                company_name: 'Tech Corp',
-                designation: 'Developer',
-                work_location: 'Chicago',
-                start_date: '2018-01-01',
-                end_date: '2022-12-31',
-                last_salary: 75000,
-                alt_mobile: '1234567891',
-                linkedin: 'https://linkedin.com/in/johndoe',
-                github: 'https://github.com/johndoe',
-                certifications: 'AWS Certified Developer',
-                reference_name: 'Jane Smith',
-                reference_email: 'jane.smith@example.com',
-                resume_path: 'Uploads/resume-sample1.pdf',
-                cover_letter_path: null,
-                submission_date: new Date(),
-                status: 'Pending'
-            },
-            {
-                full_name: 'Jane Smith',
-                email: 'jane.smith@example.com',
-                mobile: '0987654321',
-                dob: '1992-08-20',
-                parent_name: 'Robert Smith',
-                gender: 'Female',
-                nationality: 'Canadian',
-                marital_status: 'Married',
-                current_address: '456 Maple Ave, Toronto',
-                permanent_address: '456 Maple Ave, Toronto',
-                state: 'Ontario',
-                city: 'Toronto',
-                zipcode: 'M5V2T6',
-                emergency_contact: '1234567890',
-                ssc_board: 'Ontario Board',
-                ssc_year: 2008,
-                ssc_percentage: '87.0',
-                intermediate_board: null,
-                intermediate_year: null,
-                intermediate_percentage: null,
-                college_name: 'Toronto University',
-                qualification: 'B.Sc',
-                branch: 'Mathematics',
-                graduation_year: 2014,
-                graduation_percentage: '92.0',
-                additional_education: [],
-                job_role: 'Data Analyst',
-                preferred_location: 'Toronto',
-                notice_period: '15 days',
-                expected_salary: 65000,
-                skills: 'Python, R, Excel',
-                experience_status: 'Fresher',
-                years_experience: null,
-                company_name: null,
-                designation: null,
-                work_location: null,
-                start_date: null,
-                end_date: null,
-                last_salary: null,
-                alt_mobile: null,
-                linkedin: null,
-                github: null,
-                certifications: 'Google Data Analytics Certificate',
-                reference_name: null,
-                reference_email: null,
-                resume_path: 'Uploads/resume-sample2.pdf',
-                cover_letter_path: 'Uploads/cover-letter-sample2.pdf',
-                submission_date: new Date(),
-                status: 'Pending'
-            }
-        ];
-
-        const query = `
-            INSERT INTO applications (
-                full_name, email, mobile, dob, parent_name, gender, nationality, marital_status,
-                current_address, permanent_address, state, city, zipcode, emergency_contact,
-                ssc_board, ssc_year, ssc_percentage, intermediate_board, intermediate_year,
-                intermediate_percentage, college_name, qualification, branch, graduation_year,
-                graduation_percentage, additional_education, job_role, preferred_location,
-                notice_period, expected_salary, skills, experience_status, years_experience,
-                company_name, designation, work_location, start_date, end_date, last_salary,
-                alt_mobile, linkedin, github, certifications, reference_name, reference_email,
-                resume_path, cover_letter_path, submission_date, status
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
-                $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33,
-                $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, $47, $48, $49
-            ) RETURNING id
-        `;
-
-        const insertedIds = [];
-        for (const data of sampleData) {
-            const values = [
-                data.full_name, data.email, data.mobile, data.dob, data.parent_name,
-                data.gender, data.nationality, data.marital_status, data.current_address,
-                data.permanent_address, data.state, data.city, data.zipcode, data.emergency_contact,
-                data.ssc_board, data.ssc_year, data.ssc_percentage, data.intermediate_board,
-                data.intermediate_year, data.intermediate_percentage, data.college_name,
-                data.qualification, data.branch, data.graduation_year, data.graduation_percentage,
-                JSON.stringify(data.additional_education), data.job_role, data.preferred_location,
-                data.notice_period, data.expected_salary, data.skills, data.experience_status,
-                data.years_experience, data.company_name, data.designation, data.work_location,
-                data.start_date, data.end_date, data.last_salary, data.alt_mobile, data.linkedin,
-                data.github, data.certifications, data.reference_name, data.reference_email,
-                data.resume_path, data.cover_letter_path, data.submission_date, data.status
-            ];
-            const result = await pool.query(query, values);
-            insertedIds.push(result.rows[0].id);
-            console.log('Sample data inserted, ID:', result.rows[0].id);
-        }
-
-        console.log('Sample data insertion completed, IDs:', insertedIds);
-        res.status(200).json({ success: true, message: 'Sample data inserted successfully', ids: insertedIds });
-    } catch (error) {
-        console.error('Error inserting sample data:', error.message);
-        if (error.code === '23505') {
-            res.status(400).json({ success: false, error: 'Email already exists in sample data' });
-        } else {
-            res.status(500).json({ success: false, error: error.message });
-        }
     }
 });
 
@@ -808,6 +655,10 @@ app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         console.error('Multer error:', err.message);
         return res.status(400).json({ success: false, error: 'File upload error: ' + err.message });
+    }
+    if (err.message === 'Not allowed by CORS') {
+        console.error('CORS error:', err.message);
+        return res.status(403).json({ success: false, error: 'CORS policy violation' });
     }
     res.status(500).json({ success: false, error: 'Something went wrong!' });
 });
